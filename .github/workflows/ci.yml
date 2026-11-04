@@ -1,0 +1,39 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        required: false
+permissions:
+  contents: read
+jobs:
+  check:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, windows-2022, macos-15]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Linux window libraries
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libxkbcommon-dev libwayland-dev libx11-dev libxi-dev libxrandr-dev libgl1-mesa-dev
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --locked --all-targets --all-features -- -D warnings
+      - run: cargo test --locked --all-features
+      - run: cargo check --locked --no-default-features
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s scripts -p "test_*.py"
+      - run: cargo run --locked --example fixtures
+      - run: cargo run --locked --release -- examples/inputs/house.png --budget 24 --offline -o target/house.rbxm

@@ -1,0 +1,38 @@
+[package]
+name = "partify"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90"
+description = "Feature-guided image and mesh reconstruction with colored Roblox parts"
+license = "Apache-2.0"
+repository = "https://github.com/nightcycle/partify"
+
+[features]
+default = ["window"]
+window = ["dep:eframe"]
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+glam = { version = "0.30", features = ["serde"] }
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rbx_binary = "3"
+rbx_dom_weak = "4"
+rbx_xml = "3"
+rbx_mesh = "=0.7.0"
+binrw = "0.15"
+draco-core = { version = "=2.3.2", default-features = false, features = ["decoder", "edgebreaker_valence_decode", "legacy_bitstream_decode"] }
+ufbx = "=0.11.5"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
+eframe = { version = "=0.32.3", optional = true, default-features = false, features = ["default_fonts", "glow", "x11", "wayland", "__screenshot"] }
+tempfile = "3"
+
+[dev-dependencies]
+draco-core = { version = "=2.3.2", default-features = false, features = ["encoder"] }
+
+[profile.release]
+lto = "thin"
+strip = true
+
